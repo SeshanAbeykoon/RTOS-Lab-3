@@ -1,21 +1,10 @@
-//Blink Internal LED with 2 Tasks
-
-//Configure to use 1 CPU Core
-#if CONFIG_FREETOS_UNICORE
-static const BaseType_t cpu = 0;
-#else
-static const BaseType_t cpu = 1;
-#endif
-
 void task1_blink(void *param);
 void task2_blink(void *param);
 
 void setup()
 {
-    // Set LEDs as output
-    pinMode(LED_BUILTIN, OUTPUT);
-    // Serial monitor setup
-    Serial.begin(115200);
+    pinMode(LED_BUILTIN, OUTPUT);       // Set LEDs as output
+    Serial.begin(115200);               // Serial monitor setup
 
         //Task 1 Execution
         xTaskCreatePinnedToCore(
@@ -25,7 +14,7 @@ void setup()
                 NULL,                   //Function Parameters
                 1,                      //Task Priority
                 NULL,                   //Task Handle
-                cpu);                   //Runs on 1 CPU Core
+                1);                     //Runs on 1 CPU Core
 
         //Task 2 Execution
         xTaskCreatePinnedToCore(
@@ -35,7 +24,7 @@ void setup()
                 NULL,                   //Function Parameters
                 1,                      //Task Priority
                 NULL,                   //Task Handle
-                cpu);                   //Runs on 1 CPU Core
+                1);                   //Runs on 1 CPU Core
 }
 void loop()
 {
