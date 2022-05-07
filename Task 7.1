@@ -32,7 +32,6 @@ void TaskA( void * pvParameters ){
     vTaskDelay(500/portTICK_PERIOD_MS);
   } 
 }
-
 void TaskB( void * pvParameters ){
   while(1){
     Serial.print("I am Task B; I am running on CORE_");
@@ -41,5 +40,4 @@ void TaskB( void * pvParameters ){
   }
 }
 
-void loop() {
-}
+void loop() {}
