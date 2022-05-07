@@ -1,12 +1,3 @@
-//Blink 2 GPIO LEDs with 2 Tasks
-
-//Configure to use 1 CPU Core
-#if CONFIG_FREETOS_UNICORE
-static const BaseType_t cpu = 0;
-#else
-static const BaseType_t cpu = 1;
-#endif
-
 void task1_blink(void *param);
 void task2_blink(void *param);
 int LED2 = 2;
@@ -29,7 +20,7 @@ void setup()
                 NULL,                   //Function Parameters
                 1,                      //Task Priority
                 NULL,                   //Task Handle
-                cpu);                   //Runs on 1 CPU Core
+                1);                     //Runs on 1 CPU Core
 
         //Task 2 Execution
         xTaskCreatePinnedToCore(
@@ -39,7 +30,7 @@ void setup()
                 NULL,                   //Function Parameters
                 1,                      //Task Priority
                 NULL,                   //Task Handle
-                cpu);                   //Runs on 1 CPU Core
+                1);                     //Runs on 1 CPU Core
 }
 void loop()
 {
@@ -63,3 +54,4 @@ void task2_blink(void *param){
     vTaskDelay(300/portTICK_PERIOD_MS);
   }
 }
+
