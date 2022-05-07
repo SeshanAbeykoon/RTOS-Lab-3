@@ -1,37 +1,25 @@
 //Blink LED Using 1 CPU Core
-
-//Configure to use 1 CPU Core
-#if CONFIG_FREETOS_UNICORE
-static const BaseType_t app_cpu = 0;
-#else
-static const BaseType_t app_cpu = 1;
-#endif
-
-void toggleLED(void *param);
-
+void blink_LED(void *param);
 void setup()
 {
-    // Set LED as output
-    pinMode(LED_BUILTIN, OUTPUT);
-    // Serial monitor setup
-    Serial.begin(115200);
-
+    pinMode(LED_BUILTIN, OUTPUT); // Set LED as output
+    Serial.begin(115200);         // Serial monitor setup
         //Use of FreeRTOS
         xTaskCreatePinnedToCore(
-                toggleLED,        //Calling Blink Function
+                blink_LED,        //Calling Blink Function
                 "Toggle LED",     //Name of Task
                 1024,             //Stack Size
                 NULL,             //Function Parameters
                 1,                //Task Priority
                 NULL,             //Task Handle
-                app_cpu);         //Runs on 1 CPU Core
+                1);               //Runs on CPU Core 1
+        Serial.print("Core is ");
+        Serial.println(xPortGetCoreID());
 }
-void loop()
-{
-
+void loop(){
 }
 //LED Blink Function
-void toggleLED(void *param){
+void blink_LED(void *param){
   while(1){
     digitalWrite(LED_BUILTIN, HIGH);
     vTaskDelay(500/portTICK_PERIOD_MS);
