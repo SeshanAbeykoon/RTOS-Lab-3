@@ -1,0 +1,111 @@
+#include <WiFi.h>
+
+static const BaseType_t core0 = 0;
+static const BaseType_t core1 = 1;
+
+int LED2 = 2;
+int LED4 = 4;
+
+static TaskHandle_t task1 = NULL;
+static TaskHandle_t task2 = NULL;
+
+// credentials for the hotsopt
+const char* ssid     = "EN20425654";
+const char* password = "123456789";
+
+WiFiServer server(80);
+
+void connect_WiFi(void *parameters) {
+  Serial.println();
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+    
+  server.begin();
+
+  xTaskCreatePinnedToCore(web_server, "Web Server", 5000, NULL, 1, &task2, core1);
+  vTaskDelete(task1);
+}
+
+void web_server(void *parameters) {
+  while(1) {
+    
+    WiFiClient client = server.available();   
+    
+    if (client) {                             
+      Serial.println("New Client.");          
+      String currentLine = "";                 
+      while (client.connected()) {            
+        if (client.available()) {           
+          char c = client.read();             
+          Serial.write(c); 
+                            
+          if (c == '\n') {                    
+            if (currentLine.length() == 0) {
+              client.println("HTTP/1.1 200 OK");
+              client.println("Content-type:text/html");
+              client.println();
+              
+              client.print("Click <a href=\"/H\">here</a> to turn LED2 ON.<br>");
+              client.print("Click <a href=\"/L\">here</a> to turn LED2 OFF.<br>");
+
+              client.print("Click <a href=\"/N\">here</a> to turn LED4 ON.<br>");
+              client.print("Click <a href=\"/M\">here</a> to turn LED4 OFF.<br>");
+  
+              client.println();
+              break;
+            
+            } else {   
+              currentLine = "";
+            }
+          
+          } else if (c != '\r') {  
+            currentLine += c;      
+          }
+  
+          if (currentLine.endsWith("GET /H")) {
+            digitalWrite(LED2, HIGH);                
+          }
+          
+          if (currentLine.endsWith("GET /L")) {
+            digitalWrite(LED2, LOW);               
+          }
+
+          if (currentLine.endsWith("GET /N")) {
+            digitalWrite(LED4, HIGH);               
+          }
+          
+          if (currentLine.endsWith("GET /M")) { 
+            digitalWrite(LED4, LOW);               
+          }
+        }
+      }
+      
+      client.stop();
+      Serial.println("Client Disconnected.");
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED4, OUTPUT);
+
+  xTaskCreatePinnedToCore(connect_WiFi, "Connect WiFi", 5000, NULL, 1, &task1, core0);
+  vTaskDelete(NULL);
+}
+void loop() {}
+
